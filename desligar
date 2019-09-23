@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+"""
+Script para ligar instancias em Amazon AWS EC2
+"""
+# webserve SDK AWS para Python
+import boto3
+# Instancia o tipo de serviço que será consulmido da importação boto3
+client=boto3.client('ec2')
+ 
+# Função manipuladora - É uma espécie de int main, como em C++
+def lambda_handler(event, context):
+ 
+    # Instancia do método que será usada. Neste caso o método describe_instances() mapeia as instâncias existentes
+    response=client.describe_instances()
+ 
+    # Array de exceção de máquinas que não serão ligadas
+    exceptionsInstances=["i-00f0a3dfasa32s1df654df"]
+ 
+    # Laço no objeto response para Reservations
+    for reservation in response["Reservations"]:
+ 
+        # Laço no objeto reservation para Instances
+        for instance in reservation["Instances"]:
+ 
+            # Observe o formato: id deve ser um Array [], a ser passado para o método client.stop_instances(InstanceIds=[...])
+            id=[instance["InstanceId"]]
+ 
+            # Verifica se registro contém no array de exceção.
+            if instance["InstanceId"] in exceptionsInstances:
+                print(instance["InstanceId"] + " in exception, not stopping.")
+            else:
+                print(instance["InstanceId"] + " stopping")
+                client.stop_instances(InstanceIds=id)                    
+ 
+ 
+    return "Fim da execucao."
